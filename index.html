@@ -157,7 +157,9 @@ nav{
 .scroll-cue{
   position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
   z-index:2;display:flex;flex-direction:column;align-items:center;gap:6px;
+  pointer-events:none;
 }
+@media(max-height:720px){.scroll-cue{display:none}}
 .scroll-cue-line{
   width:1px;height:48px;
   background:linear-gradient(180deg,transparent,var(--cyan));
