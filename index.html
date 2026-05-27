@@ -513,10 +513,11 @@ footer{
     </h1>
 
     <p class="hero-sub">
-      CongFlow is a macro placement engine that ignores wirelength entirely
-      and attacks the real bottleneck: routing congestion. Multi-restart
-      iterative gradient descent on live H/V congestion maps, bridged with
-      async DREAMPlace, scored against the exact TILOS proxy every step.
+      The competition's scoring metric weighs routing congestion 30× heavier
+      than wire length after normalization. Most placement tools optimize wire length.
+      CongFlow doesn't. It runs iterative gradient descent directly on live H/V
+      congestion maps, launches DREAMPlace in parallel as a global seed, and calls
+      the real TILOS evaluator on every candidate before keeping it.
     </p>
 
     <div class="hero-stats">
@@ -575,17 +576,19 @@ footer{
   <div class="eyebrow">Root Cause</div>
   <div class="proxy-section">
     <div>
-      <h2 class="sh">Congestion is the<br/>only thing that matters</h2>
+      <h2 class="sh">Why we stopped<br/>optimizing wire length</h2>
       <p class="sd" style="margin-bottom:24px">
-        The TILOS proxy cost is wirelength + 0.5×density + 0.5×congestion. Post-normalization,
-        congestion is roughly 30× larger than wirelength. We tested wirelength-optimizing
-        methods exhaustively. Every one made the proxy worse.
+        The proxy is 1.0×wirelength + 0.5×density + 0.5×congestion. That looks balanced,
+        but the three terms don't normalize to similar scales: congestion runs 1.3–2.7,
+        density around 0.9, and wirelength sits at about 0.06. We tried wirelength SA
+        anyway. Pulling macros closer together tightens routing corridors — congestion spikes
+        and the proxy goes up, not down.
       </p>
       <ul class="insight-list reveal-l">
-        <li>SA on wirelength clusters macros tightly, spikes H/V congestion, proxy regresses</li>
-        <li>initial.plc carries hand-tuned spread from prior EDA; perturb it, don't replace it</li>
-        <li>Every move in CongFlow is ranked by delta on the live H/V routing congestion map</li>
-        <li>Density-based fallback rankers are empirically anti-correlated with proxy cost</li>
+        <li>Wirelength SA clusters macros tightly; H/V corridors congest; proxy goes up, not down</li>
+        <li>initial.plc already has decent spread from the prior EDA flow — perturb it, don't replace it</li>
+        <li>Every move CongFlow considers is ranked by its effect on the live H/V routing congestion map</li>
+        <li>Density-based move ranking is anti-correlated with proxy cost — confirmed empirically on every benchmark we tested</li>
       </ul>
     </div>
     <div class="glass-card reveal">
@@ -634,10 +637,11 @@ footer{
   <div class="eyebrow">Engine Design</div>
   <h2 class="sh">Nine phases. One objective.</h2>
   <p class="sd" style="margin-bottom:0">
-    Every phase feeds the same proxy scorer: 1.0×WL + 0.5×Density + 0.5×Congestion.
-    Directed phases (1–5) move macros along live H/V routing congestion gradients.
-    Exploratory phases fill whatever time remains. All candidates are re-legalized first.
-    Lowest proxy wins.
+    Every phase uses the same evaluation loop: re-legalize the placement to resolve any
+    overlap, then call the TILOS proxy scorer. Whatever candidate scores lowest becomes
+    the new best. Directed phases (1–5) pick movement directions from live H/V routing
+    congestion maps pulled straight from the evaluator. Later phases explore territory
+    that greedy gradient descent can't reach from the starting position.
   </p>
 
   <div class="pipeline-wrap">
@@ -650,10 +654,11 @@ footer{
           <span class="tag tag-base">ALWAYS RUNS</span>
         </div>
         <div class="phase-body">
-          Vectorized spiral-search legalization from <code>initial.plc</code>, placing macros largest-area-first.
-          Critical float32 precision fix preserves bit-equivalence with the scalar baseline trajectory;
-          without it, ibm04 diverges to 1.3364 instead of 1.3316.
-          <strong style="color:var(--text)"> 12× faster (3.2s → 0.27s on ibm04).</strong>
+          Resolves overlaps from <code>initial.plc</code> using a vectorized spiral search that places macros
+          largest-area-first. A float32 precision fix here is critical: without it, the legalizer
+          takes a slightly different path and ibm04 diverges to 1.3364 instead of 1.3316 — a
+          difference that compounds through every phase.
+          <strong style="color:var(--text)"> 12× faster than the original scalar version (3.2s → 0.27s on ibm04).</strong>
         </div>
       </div>
     </div>
@@ -666,9 +671,11 @@ footer{
           <span class="tag tag-base">PHASE 1</span>
         </div>
         <div class="phase-body">
-          Up to 12 steps at <code>frac=0.04</code> with adaptive halving. After each improving step,
-          both the source position and the live plc congestion map update for the next iteration.
-          Stops when a step fails to improve or budget &lt; 3×t_score.
+          Up to 12 steps at <code>frac=0.04</code> — each macro can move up to 4% of the canvas
+          width per step — with the step size halved when improvement stops. After each step that
+          lowers the proxy, the starting position and the live congestion map both update, so the
+          next iteration works from fresh gradient information. Stops when no move helps or there's
+          less time left than three scoring calls would take.
         </div>
         <div class="phase-delta">↓ ibm04: 1.4101 → 1.3316 via 7 iterations</div>
       </div>
@@ -713,10 +720,12 @@ footer{
           <span class="tag tag-dp">PHASE 5 · v2 ENHANCED</span>
         </div>
         <div class="phase-body">
-          Two DREAMPlace instances launched at <code>place()</code> entry, running in parallel with Phases 1–3.
-          "fixed" uses <code>soft_macros_movable=False</code>; "movable" lets DP's NLP jointly optimize soft macros.
-          Where initial.plc density &lt; 0.85, movable DP spreads softs for massive wins.
-          Best-of-both selection recovers regressions on dense benchmarks.
+          Two DREAMPlace instances launch at <code>place()</code> entry and run concurrently with Phases 1–3.
+          "fixed" pins soft macros at their initial positions; "movable" lets DREAMPlace's NLP
+          optimizer reposition the standard-cell clusters. On designs where canvas utilization is
+          below 85%, moving the stdcell clusters into open space directly relieves congestion hotspots —
+          that's the source of the −0.121 on ibm06. Best-of-both selection discards whichever result
+          scores worse, so we don't regress on denser benchmarks where the movable config overshoots.
         </div>
         <div class="phase-delta">↓ −0.0161 avg · ibm06: −0.121, ibm03: −0.103, ibm02: −0.051</div>
       </div>
@@ -730,9 +739,11 @@ footer{
           <span class="tag tag-dp">PHASE 7</span>
         </div>
         <div class="phase-body">
-          After the noise loop, for each completed DP placement, runs a greedy cong-grad chain
-          (up to 3 iters). DREAMPlace's plc-state mutation seeds new cong-grad basins not reachable
-          from initial.plc. 19% win rate: ibm10 −0.045, ibm02 −0.035, ibm04 −0.018.
+          Once the time-filling noise loop finishes, each completed DREAMPlace result gets fed into
+          a short cong-grad chain (up to 3 iterations). DREAMPlace can land macros in positions far
+          from initial.plc — configurations Phase 1's greedy descent can't reach on its own — which
+          opens up congestion basins that wouldn't otherwise be explored. Win rate across the suite:
+          19%. Notable: ibm10 −0.045, ibm02 −0.035, ibm04 −0.018.
         </div>
       </div>
     </div>
@@ -745,10 +756,12 @@ footer{
           <span class="tag tag-hot">PHASE 8 · NEW IN v2</span>
         </div>
         <div class="phase-body">
-          (a) TOP-K cong-grad: target the K highest-congestion macros from <code>best_pl</code>, apply directed perturb.
-          (b) Proxy-driven 2-opt (k=10 neighbors, 6 iters, 15s budget): each swap is accepted or rejected
-          based on actual proxy cost, not displacement. v1's displacement criterion was
-          <em>anti-correlated</em> with proxy, wasting the entire 15s budget.
+          Two things run here. First, TOP-K cong-grad: instead of perturbing every macro, find the K
+          that contribute most to current congestion and move only those. Second, proxy-scored 2-opt:
+          try swapping pairs of macros (k=10 neighbors, 6 iterations, 15s budget), call the real
+          evaluator on the result, and keep the swap only if the score actually drops. v1 used
+          displacement distance to decide — which turns out to be <em>anti-correlated</em> with proxy cost.
+          It burned the full 15s budget making placements worse.
         </div>
         <div class="phase-delta">↓ A1: −0.0059 avg · All 17 benchmarks improve</div>
       </div>
@@ -780,9 +793,12 @@ footer{
   <div class="eyebrow">Visual Walkthrough</div>
   <h2 class="sh">Watch it optimize</h2>
   <p class="sd" style="margin-bottom:36px">
-    A replay of the core optimization loop on a synthetic benchmark.
-    The color field is H/V routing congestion: orange-red means packed routing corridors,
-    teal-blue means headroom. Each phase moves macros toward cooler zones and re-scores.
+    The grid is a routing congestion map — the same metric the TILOS evaluator scores your
+    placement on. Hot cells (orange/red) are overloaded routing channels where the router
+    can't fit all the wires. Cool cells (teal) have spare capacity. CongFlow asks, for each
+    macro: which direction reduces the hottest cells you're contributing to? It moves there,
+    re-legalizes, and calls the real evaluator. The number in the corner is the actual proxy
+    score — the same number used to rank submissions.
   </p>
 
   <div class="demo-outer">
@@ -830,7 +846,7 @@ footer{
 <section class="section" id="journey">
   <div class="eyebrow">Score History</div>
   <h2 class="sh reveal">From 1.5062 to clearing the threshold</h2>
-  <p class="sd reveal" style="margin-bottom:48px">Each number is a full <code style="font-size:.85em;background:rgba(255,255,255,.06);padding:2px 7px;border-radius:4px">--all</code> run across all 17 IBM ICCAD04 benchmarks. No cherry-picking. Lower is better.</p>
+  <p class="sd reveal" style="margin-bottom:48px">Each number is the average proxy cost from a full <code style="font-size:.85em;background:rgba(255,255,255,.06);padding:2px 7px;border-radius:4px">--all</code> run — all 17 IBM ICCAD04 benchmarks evaluated back to back. The proxy cost is what the competition ranks by: a lower number means a placement with more routing headroom, which the router can actually close.</p>
 
   <div class="journey-wrap">
     <div class="timeline2">
@@ -952,9 +968,11 @@ footer{
 <!-- BENCHMARK TABLE -->
 <section class="section" id="results">
   <div class="eyebrow">Benchmark Numbers</div>
-  <h2 class="sh reveal">17 benchmarks, no cherry-picking</h2>
+  <h2 class="sh reveal">All 17 IBM ICCAD04 benchmarks</h2>
   <p class="sd reveal" style="margin-bottom:28px">
-    Full IBM ICCAD04 suite. Green rows clear the RePlAce threshold; every row shows both v1 and v2 so the delta is auditable.
+    The competition evaluates all 17 netlists — ranging from 246 hard macros (ibm01) to 786 (ibm10) — and
+    averages the result. Green rows are where our score falls below the RePlAce baseline.
+    Both v1 and v2 are shown so you can see exactly which benchmarks moved and by how much.
   </p>
 
   <div class="table-wrap reveal">
@@ -1015,10 +1033,12 @@ footer{
       <div class="inno-title">Best-of-Both DREAMPlace</div>
       <div class="inno-code">Issue A2 · soft_macros_movable=True</div>
       <p class="inno-body">
-        Two DP configs run in parallel: "fixed" (soft macros pinned at initial positions)
-        and "movable" (DP NLP jointly optimizes soft macros). Where canvas density &lt; 0.85,
-        movable DP spreads stdcell clusters to dramatically lower congestion. Best-of-both
-        selection prevents regressions on already-dense benchmarks (ibm01, ibm09).
+        Two DREAMPlace configs run in parallel: "fixed" pins soft macros at their initial
+        positions; "movable" lets DP's NLP optimizer reposition them. On benchmarks with
+        canvas utilization below 85%, the movable config spreads standard-cell clusters
+        away from congested corridors — that's the source of the −0.121 on ibm06.
+        Best-of-both discards whichever result scores worse, so dense benchmarks like ibm01
+        and ibm09 don't regress.
       </p>
       <div class="inno-delta">↓ −0.0161 avg · ibm06 −0.121, ibm03 −0.103, ibm02 −0.051</div>
     </div>
