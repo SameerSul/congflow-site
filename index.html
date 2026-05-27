@@ -1582,7 +1582,7 @@ document.querySelectorAll('.inno-card').forEach((el,i)=>{
 
   // ── animation state ──
   let frame=0,running=false,raf=null;
-  const FPS=60,DUR=FPS*9;
+  const FPS=60,DUR=FPS*6,HOLD=FPS*1; // 6s animation + 1s hold at end before loop
 
   function render(){
     const t=Math.min(frame/DUR,1);
@@ -1612,14 +1612,20 @@ document.querySelectorAll('.inno-card').forEach((el,i)=>{
 
     const sc=scoreAt(t);
     if(scoreEl){scoreEl.textContent=sc.toFixed(4);scoreEl.style.color=sc<=1.4578?'var(--green)':'var(--cyan)';}
-    if(phaseEl) phaseEl.textContent=frame>=DUR?'Complete ✓':`Phase ${PHASES[pi].n} · ${PHASES[pi].label}`;
-    if(dotEl){frame>=DUR?dotEl.classList.add('done'):dotEl.classList.remove('done');}
+    const atEnd=frame>=DUR;
+    if(phaseEl) phaseEl.textContent=atEnd?'Complete ✓':`Phase ${PHASES[pi].n} · ${PHASES[pi].label}`;
+    if(dotEl){atEnd?dotEl.classList.add('done'):dotEl.classList.remove('done');}
 
     updSidebar(pi);
     updChart(sc,t);
 
-    if(running&&frame<DUR){frame++;raf=requestAnimationFrame(render);}
-    else if(frame>=DUR){running=false;if(playLbl) playLbl.textContent='Replay';}
+    if(running){
+      frame++;
+      if(frame>=DUR+HOLD){          // end of hold → loop back to start
+        frame=0;scoreHist.length=0;prevSc=-1;
+      }
+      raf=requestAnimationFrame(render);
+    }
   }
 
   render();
@@ -1627,13 +1633,19 @@ document.querySelectorAll('.inno-card').forEach((el,i)=>{
   // auto-play on scroll into view
   let autoPlayed=false;
   new IntersectionObserver(entries=>{
-    if(entries[0].isIntersecting&&!autoPlayed){autoPlayed=true;setTimeout(()=>{running=true;raf=requestAnimationFrame(render);},500);}
+    if(entries[0].isIntersecting&&!autoPlayed){
+      autoPlayed=true;
+      setTimeout(()=>{
+        running=true;
+        if(playLbl) playLbl.textContent='Pause';
+        raf=requestAnimationFrame(render);
+      },500);
+    }
   },{threshold:.25}).observe(DC);
 
   window.demoToggle=function(){
-    if(frame>=DUR){frame=0;scoreHist.length=0;prevSc=-1;}
     running=!running;
-    if(playLbl) playLbl.textContent=running?'Pause':'Resume';
+    if(playLbl) playLbl.textContent=running?'Pause':'Play';
     if(running) raf=requestAnimationFrame(render);
     else if(raf) cancelAnimationFrame(raf);
   };
