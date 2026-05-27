@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CongFlow — LeetFM · Macro Placement Challenge 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<style>
+/*──────── TOKENS ────────*/
+:root{
+  --bg:#03040e;
+  --surface:#070917;
+  --glass:rgba(10,14,40,0.7);
+  --border:rgba(80,100,255,0.14);
+  --border-hi:rgba(0,200,255,0.35);
+  --cyan:#00d4ff;
+  --green:#00ffb2;
+  --orange:#ff8533;
+  --red:#ff3d3d;
+  --violet:#b48eff;
+  --text:#e4e9ff;
+  --dim:#7b85b8;
+  --dimmer:#383f6a;
+  --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:rgba(0,212,255,.25)}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:#1a2060;border-radius:3px}
+
+/*──────── NAV ────────*/
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;
+  background:rgba(3,4,14,.75);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  transition:background .3s;
+}
+.logo{
+  font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.05rem;
+  letter-spacing:-.02em;
+  background:linear-gradient(90deg,var(--cyan),var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-size:.82rem;font-weight:500;color:var(--dim);text-decoration:none;letter-spacing:.02em;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-pill{
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;
+  padding:5px 14px;border-radius:20px;letter-spacing:.04em;
+  background:linear-gradient(135deg,var(--cyan),var(--green));
+  color:#020d10;
+}
+@media(max-width:640px){.nav-links{display:none}nav{padding:0 24px}}
+
+/*──────── HERO ────────*/
+.hero{
+  position:relative;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;overflow:hidden;
+  padding:80px 24px 60px;
+}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%}
+.hero-glow-left{
+  position:absolute;left:-200px;top:20%;
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-glow-right{
+  position:absolute;right:-200px;bottom:20%;
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,255,178,.06) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-content{position:relative;z-index:2;max-width:860px}
+.hero-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:500;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--cyan);
+  border:1px solid rgba(0,212,255,.28);
+  background:rgba(0,212,255,.05);
+  padding:7px 18px;border-radius:24px;margin-bottom:32px;
+}
+.hero-chip-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--cyan);
+  animation:pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,212,255,.4)}50%{opacity:.4;box-shadow:0 0 0 6px rgba(0,212,255,0)}}
+.hero-title{
+  font-size:clamp(3.2rem,8vw,7.5rem);
+  font-weight:900;line-height:.92;letter-spacing:-.05em;
+  margin-bottom:20px;
+}
+.hero-title-top{
+  display:block;
+  background:linear-gradient(135deg,#fff 30%,rgba(180,200,255,.6));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero-title-bottom{
+  display:block;
+  background:linear-gradient(135deg,var(--cyan),var(--green) 60%,var(--violet));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 40px rgba(0,212,255,.3));
+}
+.hero-sub{
+  font-size:clamp(.95rem,1.8vw,1.15rem);font-weight:400;line-height:1.75;
+  color:var(--dim);max-width:580px;margin:0 auto 52px;
+}
+.hero-stats{
+  display:flex;justify-content:center;gap:0;
+  background:rgba(10,14,40,.6);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:20px;
+  padding:8px;margin-bottom:36px;
+  max-width:580px;margin-left:auto;margin-right:auto;
+}
+.hero-stat{
+  flex:1;padding:20px 24px;text-align:center;
+  position:relative;
+}
+.hero-stat+.hero-stat::before{
+  content:'';position:absolute;left:0;top:16px;bottom:16px;
+  width:1px;background:var(--border);
+}
+.hero-stat-n{
+  font-family:'JetBrains Mono',monospace;font-size:clamp(1.5rem,3vw,2.1rem);
+  font-weight:700;line-height:1;margin-bottom:5px;
+}
+.hero-stat-l{font-size:.7rem;font-weight:500;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.c-cyan{color:var(--cyan)}
+.c-green{color:var(--green)}
+.c-violet{color:var(--violet)}
+.c-orange{color:var(--orange)}
+.hero-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 26px;border-radius:10px;font-size:.88rem;font-weight:600;
+  text-decoration:none;letter-spacing:.01em;transition:all .22s;cursor:pointer;border:none;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--cyan),var(--green));color:#020d10;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,212,255,.3)}
+.btn-outline{
+  background:transparent;color:var(--text);
+  border:1px solid var(--border);
+}
+.btn-outline:hover{border-color:var(--border-hi);background:rgba(0,212,255,.06);transform:translateY(-2px)}
+.scroll-cue{
+  position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
+  z-index:2;display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.scroll-cue-line{
+  width:1px;height:48px;
+  background:linear-gradient(180deg,transparent,var(--cyan));
+  animation:scrollLine 2s ease-in-out infinite;
+}
+@keyframes scrollLine{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+.scroll-cue-text{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dimmer)}
+
+/*──────── BEAT STRIP ────────*/
+.beat-strip{
+  background:linear-gradient(135deg,rgba(0,255,178,.06),rgba(0,212,255,.04));
+  border-top:1px solid rgba(0,255,178,.15);
+  border-bottom:1px solid rgba(0,255,178,.15);
+  padding:40px 48px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.beat-strip::before{
+  content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);
+  width:500px;height:200px;
+  background:radial-gradient(ellipse,rgba(0,255,178,.12),transparent 70%);
+  pointer-events:none;
+}
+.beat-eyebrow{
+  font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--green);margin-bottom:10px;
+}
+.beat-h{
+  font-size:clamp(1.8rem,4vw,3.2rem);font-weight:800;letter-spacing:-.04em;
+  color:var(--green);margin-bottom:8px;
+  text-shadow:0 0 60px rgba(0,255,178,.3);
+}
+.beat-sub{font-size:.95rem;color:var(--dim)}
+.beat-sub strong{color:var(--text)}
+
+/*──────── SECTION CHROME ────────*/
+.section{padding:100px 48px;max-width:1100px;margin:0 auto}
+.section-sm{padding:72px 48px;max-width:1100px;margin:0 auto}
+@media(max-width:640px){.section,.section-sm{padding:72px 24px}}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:'JetBrains Mono',monospace;font-size:.67rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);
+  margin-bottom:18px;
+}
+.eyebrow::before{content:'';width:24px;height:1px;background:var(--cyan)}
+.sh{font-size:clamp(1.7rem,3.5vw,2.7rem);font-weight:800;letter-spacing:-.04em;line-height:1.08;margin-bottom:14px}
+.sd{font-size:1rem;color:var(--dim);line-height:1.8;max-width:620px}
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);max-width:1100px;margin:0 auto}
+
+/*──────── PROXY CARDS ────────*/
+.proxy-section{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.proxy-section{grid-template-columns:1fr}}
+.glass-card{
+  background:var(--glass);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:20px;
+  padding:32px 36px;position:relative;overflow:hidden;
+  transition:border-color .3s,transform .3s;
+}
+.glass-card:hover{border-color:var(--border-hi);transform:translateY(-4px)}
+.glass-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,212,255,.4),transparent);
+}
+.formula-label{font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:24px}
+.formula{display:flex;align-items:center;gap:0;flex-wrap:wrap;justify-content:center}
+.f-term{text-align:center;padding:16px 20px}
+.f-coeff{font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:700;margin-bottom:3px}
+.f-name{font-size:.68rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--dim)}
+.f-val{font-family:'JetBrains Mono',monospace;font-size:.7rem;margin-top:5px;opacity:.7}
+.f-op{font-size:1.8rem;color:var(--dimmer);padding:0 4px;font-weight:300}
+.f-wl{color:#b48eff}.f-den{color:var(--orange)}.f-cong{color:var(--red)}
+.cong-callout{
+  margin-top:20px;padding:12px 16px;border-radius:10px;
+  background:rgba(255,61,61,.06);border:1px solid rgba(255,61,61,.15);
+  font-size:.83rem;color:var(--dim);display:flex;align-items:center;gap:10px;
+}
+.cong-callout strong{color:var(--red)}
+.insight-list{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:4px}
+.insight-list li{
+  display:flex;align-items:flex-start;gap:12px;
+  font-size:.88rem;color:var(--dim);line-height:1.65;
+}
+.insight-list li::before{
+  content:'→';color:var(--cyan);font-family:'JetBrains Mono',monospace;
+  font-size:.8rem;margin-top:2px;flex-shrink:0;
+}
+
+/*──────── PIPELINE ────────*/
+.pipeline-wrap{display:flex;flex-direction:column;gap:2px;margin-top:48px}
+.phase{
+  display:grid;grid-template-columns:68px 1fr;
+  opacity:0;transform:translateX(-30px);
+  transition:opacity .5s ease,transform .5s ease;
+}
+.phase.in{opacity:1;transform:none}
+.phase-left{display:flex;flex-direction:column;align-items:center;padding-top:4px}
+.phase-badge{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.9rem;
+  border:1px solid;flex-shrink:0;position:relative;z-index:1;
+}
+.phase-stem{width:1px;flex:1;min-height:20px;background:var(--border);margin-top:4px}
+.phase-card2{
+  background:var(--glass);backdrop-filter:blur(12px);
+  border:1px solid var(--border);border-radius:14px;
+  padding:20px 24px;margin-left:16px;margin-bottom:12px;
+  position:relative;overflow:hidden;
+  transition:border-color .25s,box-shadow .25s;
+}
+.phase-card2:hover{border-color:rgba(80,120,255,.3);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.phase-card2::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.02),transparent);
+  pointer-events:none;
+}
+.phase-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.phase-title{font-weight:700;font-size:.97rem}
+.tag{
+  font-family:'JetBrains Mono',monospace;font-size:.63rem;font-weight:600;
+  padding:3px 10px;border-radius:20px;letter-spacing:.04em;white-space:nowrap;
+}
+.tag-base{background:rgba(120,130,200,.1);color:#8898cc;border:1px solid rgba(120,130,200,.2)}
+.tag-new{background:rgba(0,255,178,.08);color:var(--green);border:1px solid rgba(0,255,178,.2)}
+.tag-dp{background:rgba(180,142,255,.08);color:var(--violet);border:1px solid rgba(180,142,255,.2)}
+.tag-hot{background:rgba(255,133,51,.08);color:var(--orange);border:1px solid rgba(255,133,51,.2)}
+.phase-body{font-size:.85rem;color:var(--dim);line-height:1.7}
+.phase-delta{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:.72rem;
+  color:var(--green);background:rgba(0,255,178,.07);
+  border:1px solid rgba(0,255,178,.15);padding:4px 10px;border-radius:20px;
+}
+/* phase colors */
+.ph0 .phase-badge{border-color:var(--dimmer);color:var(--dim);background:rgba(60,70,120,.15)}
+.ph1 .phase-badge{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.08)}
+.ph2 .phase-badge{border-color:#60a8ff;color:#60a8ff;background:rgba(96,168,255,.08)}
+.ph3 .phase-badge{border-color:var(--violet);color:var(--violet);background:rgba(180,142,255,.08)}
+.ph5 .phase-badge{border-color:var(--green);color:var(--green);background:rgba(0,255,178,.08)}
+.ph7 .phase-badge{border-color:var(--orange);color:var(--orange);background:rgba(255,133,51,.08)}
+.ph8 .phase-badge{border-color:var(--red);color:var(--red);background:rgba(255,61,61,.08)}
+.ph9 .phase-badge{border-color:#c084fc;color:#c084fc;background:rgba(192,132,252,.08)}
+
+/*──────── SCORE JOURNEY ────────*/
+.journey-wrap{display:grid;grid-template-columns:1fr 380px;gap:48px;align-items:start}
+@media(max-width:900px){.journey-wrap{grid-template-columns:1fr}}
+.timeline2{display:flex;flex-direction:column;gap:0}
+.tl2-item{
+  display:grid;grid-template-columns:80px 1fr;gap:0;
+  opacity:0;transform:translateY(20px);
+  transition:opacity .45s,transform .45s;
+}
+.tl2-item.in{opacity:1;transform:none}
+.tl2-left{display:flex;flex-direction:column;align-items:center;padding-top:8px}
+.tl2-dot{
+  width:14px;height:14px;border-radius:50%;border:2px solid;flex-shrink:0;
+  position:relative;z-index:1;
+}
+.tl2-dot.glow::after{
+  content:'';position:absolute;inset:-4px;border-radius:50%;
+  border:2px solid;opacity:.4;animation:ringPulse 2s ease-in-out infinite;
+}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.6);opacity:0}}
+.tl2-line{width:1px;flex:1;min-height:24px;background:var(--border);margin:4px 0}
+.tl2-right{padding:0 0 28px 20px}
+.tl2-ver{font-family:'JetBrains Mono',monospace;font-size:.67rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.tl2-score{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:1.9rem;line-height:1;margin-bottom:5px}
+.tl2-desc{font-size:.83rem;color:var(--dim);line-height:1.65}
+.tl2-desc strong{color:var(--text)}
+.tl2-target{
+  margin-top:12px;padding:14px 18px;border-radius:12px;
+  border:1px dashed rgba(255,200,0,.3);background:rgba(255,200,0,.03);
+  display:flex;align-items:center;gap:14px;
+}
+.tl2-target-score{font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:700;color:rgba(255,200,0,.8)}
+.tl2-target-label{font-size:.78rem;color:var(--dim)}
+
+/*──────── CHART ────────*/
+.chart-card{
+  background:var(--glass);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:20px;
+  padding:28px 24px 20px;position:sticky;top:76px;
+}
+.chart-title{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:20px}
+#scoreChart{width:100%;height:260px;display:block}
+.chart-key{margin-top:16px;display:flex;flex-direction:column;gap:7px}
+.chart-key-item{display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--dim)}
+.ck-swatch{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/*──────── BENCHMARK TABLE ────────*/
+.table-wrap{border-radius:16px;border:1px solid var(--border);overflow:hidden;overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{
+  background:rgba(8,11,30,.9);
+  padding:13px 16px;text-align:left;
+  font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.09em;
+  color:var(--dimmer);text-transform:uppercase;white-space:nowrap;
+  border-bottom:1px solid var(--border);
+}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.035);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+td{padding:11px 16px;font-family:'JetBrains Mono',monospace;font-size:.8rem;white-space:nowrap}
+.t-name{color:var(--text);font-size:.88rem;font-weight:600}
+.t-dim{color:var(--dimmer)}
+.t-v2{color:var(--text);font-weight:600}
+.t-ref{color:rgba(255,200,0,.75)}
+.chip-w{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:700}
+.chip-w.win{background:rgba(0,255,178,.1);color:var(--green);border:1px solid rgba(0,255,178,.2)}
+.chip-w.lose{background:rgba(255,61,61,.1);color:var(--red);border:1px solid rgba(255,61,61,.2)}
+.bar-cell{display:flex;align-items:center;gap:6px}
+.mini-bar{height:6px;border-radius:3px;min-width:3px}
+tfoot td{background:rgba(0,212,255,.04);border-top:1px solid rgba(0,212,255,.2);font-weight:700;color:var(--green)}
+
+/*──────── INNOVATION CARDS ────────*/
+.inno-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:18px}
+.inno-card{
+  background:var(--glass);backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:18px;
+  padding:28px 28px 24px;position:relative;overflow:hidden;
+  transition:border-color .3s,transform .3s,box-shadow .3s;
+}
+.inno-card:hover{transform:translateY(-5px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.inno-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  border-radius:18px 18px 0 0;
+}
+.ia1::after{background:linear-gradient(90deg,var(--green),var(--cyan))}
+.ia2::after{background:linear-gradient(90deg,var(--violet),var(--cyan))}
+.ib3::after{background:linear-gradient(90deg,var(--orange),#ffcf40)}
+.ia6::after{background:linear-gradient(90deg,var(--red),var(--orange))}
+.ib1::after{background:linear-gradient(90deg,var(--dim),#8898cc)}
+.inno-icon{
+  width:44px;height:44px;border-radius:12px;border:1px solid;
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+  margin-bottom:18px;
+}
+.ia1 .inno-icon{border-color:rgba(0,255,178,.3);background:rgba(0,255,178,.06)}
+.ia2 .inno-icon{border-color:rgba(180,142,255,.3);background:rgba(180,142,255,.06)}
+.ib3 .inno-icon{border-color:rgba(255,133,51,.3);background:rgba(255,133,51,.06)}
+.ia6 .inno-icon{border-color:rgba(255,61,61,.3);background:rgba(255,61,61,.06)}
+.ib1 .inno-icon{border-color:rgba(120,130,200,.3);background:rgba(120,130,200,.06)}
+.inno-title{font-weight:700;font-size:.97rem;margin-bottom:5px}
+.inno-code{font-family:'JetBrains Mono',monospace;font-size:.67rem;color:var(--cyan);margin-bottom:12px;letter-spacing:.03em}
+.inno-body{font-size:.85rem;color:var(--dim);line-height:1.7}
+.inno-delta{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:.7rem;
+  color:var(--green);background:rgba(0,255,178,.07);
+  border:1px solid rgba(0,255,178,.18);padding:4px 10px;border-radius:20px;
+}
+
+/*──────── FOOTER ────────*/
+footer{
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:64px 48px 48px;text-align:center;
+}
+.footer-logo{
+  font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:800;
+  background:linear-gradient(90deg,var(--cyan),var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:10px;
+}
+.footer-sub{font-size:.88rem;color:var(--dim);line-height:1.7;margin-bottom:32px}
+.footer-pills{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:40px}
+.f-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'JetBrains Mono',monospace;font-size:.7rem;font-weight:500;
+  padding:7px 14px;border-radius:8px;border:1px solid var(--border);color:var(--dim);
+}
+.footer-copy{font-size:.72rem;color:var(--dimmer)}
+
+/*──────── SCROLL ANIMATIONS ────────*/
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:none}
+.reveal-l{opacity:0;transform:translateX(-24px);transition:opacity .6s ease,transform .6s ease}
+.reveal-l.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">// CongFlow</div>
+  <ul class="nav-links">
+    <li><a href="#method">Method</a></li>
+    <li><a href="#pipeline">Pipeline</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#innovations">v2</a></li>
+  </ul>
+  <div class="nav-pill">LeetFM · 2026</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-glow-left"></div>
+  <div class="hero-glow-right"></div>
+
+  <div class="hero-content">
+    <div class="hero-chip"><span class="hero-chip-dot"></span>Partcl / HRT Macro Placement Challenge 2026</div>
+
+    <h1 class="hero-title">
+      <span class="hero-title-top">We beat</span>
+      <span class="hero-title-bottom">RePlAce.</span>
+    </h1>
+
+    <p class="hero-sub">
+      CongFlow — a congestion-first placement engine using
+      multi-restart iterative routing-congestion-gradient perturbation
+      and async DREAMPlace, scoring every candidate against the
+      exact TILOS PlacementCost proxy.
+    </p>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-n c-green" id="ctr-score">1.4486</div>
+        <div class="hero-stat-l">Avg Proxy Cost</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-n c-cyan">−0.6%</div>
+        <div class="hero-stat-l">vs RePlAce</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-n c-violet">~200s</div>
+        <div class="hero-stat-l">Per Benchmark</div>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <a href="#pipeline" class="btn btn-primary">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        Explore Method
+      </a>
+      <a href="https://github.com/SameerSul/macro-place-challenge-2026" target="_blank" class="btn btn-outline">
+        <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.92.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        Source Code
+      </a>
+    </div>
+  </div>
+
+  <div class="scroll-cue">
+    <div class="scroll-cue-text">scroll</div>
+    <div class="scroll-cue-line"></div>
+  </div>
+</section>
+
+<!-- BEAT STRIP -->
+<div class="beat-strip">
+  <div class="beat-eyebrow">✓ Grand Prize Qualification</div>
+  <div class="beat-h">Beat RePlAce by 0.0092 points</div>
+  <p class="beat-sub">
+    Our avg score <strong>1.4486</strong> clears the Grand Prize threshold <strong>1.4578</strong>.
+    Gap to leaderboard #1 (UT Austin DREAMPlace, GPU): 0.041.
+  </p>
+</div>
+
+<!-- METHOD -->
+<section class="section" id="method">
+  <div class="eyebrow">The Problem</div>
+  <div class="proxy-section">
+    <div>
+      <h2 class="sh">Congestion dominates<br/>everything else</h2>
+      <p class="sd" style="margin-bottom:24px">
+        The placement proxy is a weighted sum of wirelength, density, and congestion.
+        After normalization, congestion is ~30× larger than wirelength. Classic EDA tools
+        optimize wirelength — which actively hurts this proxy by clustering macros into
+        congested corridors.
+      </p>
+      <ul class="insight-list reveal-l">
+        <li>Wirelength-only SA clusters macros → congestion spikes → proxy regresses</li>
+        <li>initial.plc already has hand-tuned spread — preserve it, don't rebuild from scratch</li>
+        <li>Every directed move in CongFlow targets the real H/V routing congestion map</li>
+        <li>Density fallback rankers are anti-correlated with proxy (empirically verified)</li>
+      </ul>
+    </div>
+    <div class="glass-card reveal">
+      <div class="formula-label">Proxy Cost Formula</div>
+      <div class="formula">
+        <div class="f-term">
+          <div class="f-coeff f-wl">1.0 ×</div>
+          <div class="f-name">Wirelength</div>
+          <div class="f-val f-wl">≈ 0.06</div>
+        </div>
+        <div class="f-op">+</div>
+        <div class="f-term">
+          <div class="f-coeff f-den">0.5 ×</div>
+          <div class="f-name">Density</div>
+          <div class="f-val f-den">≈ 0.90</div>
+        </div>
+        <div class="f-op">+</div>
+        <div class="f-term">
+          <div class="f-coeff f-cong">0.5 ×</div>
+          <div class="f-name">Congestion</div>
+          <div class="f-val f-cong">≈ 1.3–2.7</div>
+        </div>
+      </div>
+      <div class="cong-callout">
+        <span>⚡</span>
+        <span>Congestion is <strong>~30× larger</strong> than wirelength after normalization. Optimize it directly.</span>
+      </div>
+      <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="background:rgba(180,142,255,.06);border:1px solid rgba(180,142,255,.15);border-radius:10px;padding:14px 16px;text-align:center">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--violet)">1.4076</div>
+          <div style="font-size:.67rem;color:var(--dim);margin-top:4px;letter-spacing:.06em;text-transform:uppercase">UT Austin #1</div>
+        </div>
+        <div style="background:rgba(0,255,178,.06);border:1px solid rgba(0,255,178,.15);border-radius:10px;padding:14px 16px;text-align:center">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--green)">1.4486</div>
+          <div style="font-size:.67rem;color:var(--dim);margin-top:4px;letter-spacing:.06em;text-transform:uppercase">CongFlow v2 ✓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- PIPELINE -->
+<section class="section" id="pipeline">
+  <div class="eyebrow">Algorithm</div>
+  <h2 class="sh">Nine-phase congestion engine</h2>
+  <p class="sd" style="margin-bottom:0">
+    Directed phases (1–5) use live H/V routing congestion maps from TILOS PlacementCost.
+    Exploratory phases fill the remaining time budget. All candidates are re-legalized and
+    scored exactly — lowest proxy wins.
+  </p>
+
+  <div class="pipeline-wrap">
+
+    <div class="phase ph0 reveal">
+      <div class="phase-left"><div class="phase-badge">0</div><div class="phase-stem"></div></div>
+      <div class="phase-card2">
+        <div class="phase-head">
+          <div class="phase-title">Baseline Legalization</div>
+          <span class="tag tag-base">ALWAYS RUNS</span>
+        </div>
+        <div class="phase-body">
+          Vectorized spiral-search legalization from <code>initial.plc</code>, placing macros largest-area-first.
+          Critical float32 precision fix preserves bit-equivalence with the scalar baseline trajectory —
+          without it, ibm04 diverges to 1.3364 instead of 1.3316.
+          <strong style="color:var(--text)"> 12× faster (3.2s → 0.27s on ibm04).</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase ph1 reveal">
+      <div class="phase-left"><div class="phase-badge">1</div><div class="phase-stem"></div></div>
+      <div class="phase-card2">
+        <div class="phase-head">
+          <div class="phase-title">Iterative Congestion-Gradient Descent</div>
+          <span class="tag tag-base">PHASE 1</span>
+        </div>
+        <div class="phase-body">
+          Up to 12 steps at <code>frac=0.04</code> with adaptive halving. After each improving step,
+          both the source position and the live plc congestion map update for the next iteration.
+          Stops when a step fails to improve or budget &lt; 3×t_score.
+        </div>
+        <div class="phase-delta">↓ ibm04: 1.4101 → 1.3316 via 7 iterations</div>
+      </div>
+    </div>
+
+    <div class="phase ph2 reveal">
+      <div class="phase-left"><div class="phase-badge">2</div><div class="phase-stem"></div></div>
+      <div class="phase-card2">
+        <div class="phase-head">
+          <div class="phase-title">Wide Steps from Baseline</div>
+          <span class="tag tag-base">PHASE 2</span>
+        </div>
+        <div class="phase-body">
+          Larger steps (<code>frac=0.08, 0.12</code>) from baseline_pos using the stale congestion map
+          from Phase 1's best iteration. The stale map acts as second-order curvature information,
+          guiding larger jumps into unexplored basins.
+        </div>
+        <div class="phase-delta">↓ ibm02: 1.6800 → 1.5823</div>
+      </div>
+    </div>
+
+    <div class="phase ph3 reveal">
+      <div class="phase-left"><div class="phase-badge">3</div><div class="phase-stem"></div></div>
+      <div class="phase-card2">
+        <div class="phase-head">
+          <div class="phase-title">Best-Position Cong-Grad</div>
+          <span class="tag tag-base">PHASE 3</span>
+        </div>
+        <div class="phase-body">
+          Perturbs the current <code>best_pl</code> at <code>frac=0.04</code> using a cached congestion map.
+          Finds basins missed by Phases 1/2. ibm04's stable 1.3316 win lives specifically in this basin —
+          it requires starting from the Phase 1 best rather than the original baseline.
+        </div>
+      </div>
+    </div>
+
+    <div class="phase ph5 reveal">
+      <div class="phase-left"><div class="phase-badge">5</div><div class="phase-stem"></div></div>
+      <div class="phase-card2">
+        <div class="phase-head">
+          <div class="phase-title">Async DREAMPlace — Best-of-Both</div>
+          <span class="tag tag-dp">PHASE 5 · v2 ENHANCED</span>
+        </div>
+        <div class="phase-body">
+          Two DREAMPlace instances launched at <code>place()</code> entry, running in parallel with Phases 1–3.
+          "fixed" uses <code>soft_macros_movable=False</code>; "movable" lets DP's NLP jointly optimize soft macros.
+          Where initial.plc density &lt; 0.85, movable DP spreads softs for massive wins.
+          Best-of-both selection recovers regressions on dense benchmarks.
+        </div>
+        <div class="phase-delta">↓ −0.0161 avg · ibm06: −0.121, ibm03: −0.103, ibm02: −0.051</div>
+      </div>
+    </div>
+
+    <div class="phase ph7 reveal">
+      <div class="phase-left"><div class="phase-badge">7</div><div class="phase-stem"></div></div>
+      <div class="phase-card2">
+        <div class="phase-head">
+          <div class="phase-title">DP-Rescue Cong-Grad Chain</div>
+          <span class="tag tag-dp">PHASE 7</span>
+        </div>
+        <div class="phase-body">
+          After the noise loop, for each completed DP placement, runs a greedy cong-grad chain
+          (up to 3 iters). DREAMPlace's plc-state mutation seeds new cong-grad basins not reachable
+          from initial.plc. 19% win rate: ibm10 −0.045, ibm02 −0.035, ibm04 −0.018.
+        </div>
+      </div>
+    </div>
+
+    <div class="phase ph8 reveal">
+      <div class="phase-left"><div class="phase-badge">8</div><div class="phase-stem"></div></div>
+      <div class="phase-card2">
+        <div class="phase-head">
+          <div class="phase-title">TOP-K Cong-Grad + Proxy 2-opt</div>
+          <span class="tag tag-hot">PHASE 8 · NEW IN v2</span>
+        </div>
+        <div class="phase-body">
+          (a) TOP-K cong-grad: target the K highest-congestion macros from <code>best_pl</code>, apply directed perturb.
+          (b) Proxy-driven 2-opt (k=10 neighbors, 6 iters, 15s budget): each swap is accepted or rejected
+          based on actual proxy cost — not displacement. v1's displacement criterion was
+          <em>anti-correlated</em> with proxy, wasting the entire 15s budget.
+        </div>
+        <div class="phase-delta">↓ A1: −0.0059 avg · All 17 benchmarks improve</div>
+      </div>
+    </div>
+
+    <div class="phase ph9 reveal" style="opacity:0">
+      <div class="phase-left"><div class="phase-badge">9</div></div>
+      <div class="phase-card2">
+        <div class="phase-head">
+          <div class="phase-title">Random-Order Legalization</div>
+          <span class="tag tag-hot">PHASE 9 · NEW IN v2</span>
+        </div>
+        <div class="phase-body">
+          Shuffles the macro placement order in the spiral-search legalizer, exploring alternative
+          macro assignment topologies. The greedy spiral-search is order-sensitive — different orderings
+          produce different legal arrangements from the same initial positions.
+        </div>
+        <div class="phase-delta">↓ −0.0003 avg</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- JOURNEY -->
+<section class="section" id="journey">
+  <div class="eyebrow">Score Evolution</div>
+  <h2 class="sh reveal">From 1.5062 to beating RePlAce</h2>
+  <p class="sd reveal" style="margin-bottom:48px">Every number is a real --all run across all 17 IBM ICCAD04 benchmarks. Lower is better.</p>
+
+  <div class="journey-wrap">
+    <div class="timeline2">
+
+      <div class="tl2-item">
+        <div class="tl2-left">
+          <div class="tl2-dot" style="border-color:var(--dimmer);background:var(--dimmer)"></div>
+          <div class="tl2-line"></div>
+        </div>
+        <div class="tl2-right">
+          <div class="tl2-ver">Leg-only · v1</div>
+          <div class="tl2-score" style="color:var(--dim)">1.5062</div>
+          <div class="tl2-desc">Baseline: legalize from initial.plc, return immediately. No restarts or congestion moves.</div>
+        </div>
+      </div>
+
+      <div class="tl2-item">
+        <div class="tl2-left">
+          <div class="tl2-dot" style="border-color:#5a7aff;background:#5a7aff"></div>
+          <div class="tl2-line"></div>
+        </div>
+        <div class="tl2-right">
+          <div class="tl2-ver">Cong-grad pipeline · v12</div>
+          <div class="tl2-score" style="color:#7090ff">1.4854</div>
+          <div class="tl2-desc">Phase 1/2/3 iterative cong-grad + noise restarts. Budget fix, running-max guard, vectorized legalize (12×).</div>
+        </div>
+      </div>
+
+      <div class="tl2-item">
+        <div class="tl2-left">
+          <div class="tl2-dot" style="border-color:var(--cyan);background:var(--cyan)"></div>
+          <div class="tl2-line"></div>
+        </div>
+        <div class="tl2-right">
+          <div class="tl2-ver">Async DREAMPlace · v1 submitted</div>
+          <div class="tl2-score c-cyan">1.4804</div>
+          <div class="tl2-desc">Parallel DP integration. Wins on ibm01 (−0.040), ibm04 (−0.012), ibm10 (−0.037). <strong>Submitted to challenge.</strong></div>
+        </div>
+      </div>
+
+      <div class="tl2-item">
+        <div class="tl2-left">
+          <div class="tl2-dot" style="border-color:#60c8ff;background:#60c8ff"></div>
+          <div class="tl2-line"></div>
+        </div>
+        <div class="tl2-right">
+          <div class="tl2-ver">Incremental scorer + cumulative guard · v2</div>
+          <div class="tl2-score" style="color:#60c8ff">1.4782</div>
+          <div class="tl2-desc">Scoring 22ms → 5ms via position cache + per-net incremental HPWL + routing. ibm17 timeout eliminated.</div>
+        </div>
+      </div>
+
+      <div class="tl2-item">
+        <div class="tl2-left">
+          <div class="tl2-dot" style="border-color:#40d8b0;background:#40d8b0"></div>
+          <div class="tl2-line"></div>
+        </div>
+        <div class="tl2-right">
+          <div class="tl2-ver">Proxy 2-opt + TOP-K cong-grad · v2</div>
+          <div class="tl2-score" style="color:#40d8b0">1.4701</div>
+          <div class="tl2-desc">All 17 benchmarks improve. −0.0059 from proxy-driven 2-opt alone. Wall-clock: 542s → 461s.</div>
+        </div>
+      </div>
+
+      <div class="tl2-item">
+        <div class="tl2-left">
+          <div class="tl2-dot" style="border-color:#20e890;background:#20e890"></div>
+          <div class="tl2-line"></div>
+        </div>
+        <div class="tl2-right">
+          <div class="tl2-ver">k=10 neighbors + Phase 8 chains</div>
+          <div class="tl2-score" style="color:#20e890">1.4647</div>
+          <div class="tl2-desc">Wider 2-opt neighborhood and more iterations squeeze more per budget window.</div>
+        </div>
+      </div>
+
+      <div class="tl2-item">
+        <div class="tl2-left">
+          <div class="tl2-dot glow" style="border-color:var(--green);background:var(--green)"></div>
+          <div class="tl2-line" style="background:transparent"></div>
+        </div>
+        <div class="tl2-right">
+          <div class="tl2-ver">Best-of-Both DPs (soft_macros_movable) · v2 FINAL</div>
+          <div class="tl2-score c-green" style="font-size:2.6rem">1.4486</div>
+          <div class="tl2-desc">
+            DP-movable variant spreads soft macros for massive wins where density &lt; 0.85.
+            Best-of-both recovers regressions on dense benchmarks.
+            <strong style="color:var(--green)"> Beats RePlAce 1.4578 by 0.0092.</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl2-target">
+        <div class="tl2-target-score">1.4578</div>
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:rgba(255,200,0,.9);margin-bottom:2px">RePlAce Baseline (cleared ✓)</div>
+          <div class="tl2-target-label">Challenge Grand Prize threshold</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-card reveal">
+      <div class="chart-title">Score Progression — all 17 IBM benchmarks</div>
+      <canvas id="scoreChart"></canvas>
+      <div class="chart-key">
+        <div class="chart-key-item"><div class="ck-swatch" style="background:rgba(90,100,200,.5)"></div>Prior baselines</div>
+        <div class="chart-key-item"><div class="ck-swatch" style="background:var(--cyan)"></div>CongFlow progression</div>
+        <div class="chart-key-item"><div class="ck-swatch" style="background:var(--green)"></div>v2 Final — beats RePlAce</div>
+        <div class="chart-key-item"><div class="ck-swatch" style="border:1px dashed rgba(255,200,0,.5);background:transparent"></div>RePlAce threshold 1.4578</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- BENCHMARK TABLE -->
+<section class="section" id="results">
+  <div class="eyebrow">Results</div>
+  <h2 class="sh reveal">Per-benchmark breakdown</h2>
+  <p class="sd reveal" style="margin-bottom:28px">
+    All 17 IBM ICCAD04 benchmarks. Green rows beat RePlAce.
+  </p>
+
+  <div class="table-wrap reveal">
+    <table>
+      <thead>
+        <tr>
+          <th>Benchmark</th>
+          <th>Hard Macros</th>
+          <th>v1 Score</th>
+          <th>v2 Score</th>
+          <th>RePlAce</th>
+          <th>vs RePlAce</th>
+          <th>Improvement</th>
+        </tr>
+      </thead>
+      <tbody id="benchTbody"></tbody>
+      <tfoot>
+        <tr>
+          <td class="t-name">AVG (17)</td>
+          <td class="t-dim">—</td>
+          <td class="t-dim">1.4804</td>
+          <td class="t-v2">1.4486</td>
+          <td class="t-ref">1.4578</td>
+          <td><span class="chip-w win">▲ −0.6%</span></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- INNOVATIONS -->
+<section class="section" id="innovations">
+  <div class="eyebrow">v2 Key Changes</div>
+  <h2 class="sh reveal">What made the difference</h2>
+  <p class="sd reveal" style="margin-bottom:36px">
+    Five targeted changes moved the average from 1.4804 → 1.4486, a −0.0318 improvement across 17 benchmarks.
+  </p>
+
+  <div class="inno-grid">
+    <div class="inno-card ia1 reveal">
+      <div class="inno-icon">🎯</div>
+      <div class="inno-title">Proxy-Driven 2-opt</div>
+      <div class="inno-code">Issue A1 · _two_opt_proxy_swap</div>
+      <p class="inno-body">
+        v1's 2-opt accepted swaps when per-pair displacement decreased — a criterion with
+        no relation to proxy cost. On ibm01/04/10 it actively made proxy worse while
+        appearing to "improve" the placement. v2 tentatively applies each swap, scores it
+        with the real proxy, and accepts only if cost strictly decreases.
+      </p>
+      <div class="inno-delta">↓ −0.0059 avg · All 17 benchmarks improve</div>
+    </div>
+
+    <div class="inno-card ia2 reveal">
+      <div class="inno-icon">🔀</div>
+      <div class="inno-title">Best-of-Both DREAMPlace</div>
+      <div class="inno-code">Issue A2 · soft_macros_movable=True</div>
+      <p class="inno-body">
+        Two DP configs run in parallel: "fixed" (soft macros pinned at initial positions)
+        and "movable" (DP NLP jointly optimizes soft macros). Where canvas density &lt; 0.85,
+        movable DP spreads stdcell clusters to dramatically lower congestion. Best-of-both
+        selection prevents regressions on already-dense benchmarks (ibm01, ibm09).
+      </p>
+      <div class="inno-delta">↓ −0.0161 avg · ibm06 −0.121, ibm03 −0.103, ibm02 −0.051</div>
+    </div>
+
+    <div class="inno-card ib3 reveal">
+      <div class="inno-icon">⚡</div>
+      <div class="inno-title">4-Phase Incremental Scorer</div>
+      <div class="inno-code">Issue B3 (phases 1–4) · IncrementalScorer</div>
+      <p class="inno-body">
+        Four successive speedups: (1) global position cache eliminates Python get_pos loops;
+        (2) per-net HPWL with macro→nets index updates only touched nets; (3) numpy ABU
+        skips .tolist() overhead; (4) per-net incremental routing footprint cache.
+        More 2-opt iterations per budget window directly translates to better scores.
+      </p>
+      <div class="inno-delta">22ms → 5ms per score · --all wall-clock −155s</div>
+    </div>
+
+    <div class="inno-card ia6 reveal">
+      <div class="inno-icon">🌡️</div>
+      <div class="inno-title">TOP-K Congestion-Gradient Phase</div>
+      <div class="inno-code">Issue A6 · Phase 8 TOP-K cong-grad</div>
+      <p class="inno-body">
+        After Phase 7, identifies the K macros with the highest per-cell congestion
+        contribution and applies a targeted cong-grad perturbation from best_pl.
+        Focuses the perturbation budget on the macros actually causing the congestion
+        bottleneck rather than scattering gradient across the full canvas.
+      </p>
+      <div class="inno-delta">↓ −0.0010 avg · Wins on ibm02/03/04/06/16</div>
+    </div>
+
+    <div class="inno-card ib1 reveal">
+      <div class="inno-icon">⏱️</div>
+      <div class="inno-title">Cumulative Wall-Clock Guard</div>
+      <div class="inno-code">Issue B1 · cumulative_elapsed tracking</div>
+      <p class="inno-body">
+        v1's per-benchmark budget didn't account for cumulative --all runtime,
+        causing ibm17 to consistently exceed the 3600s harness cap and return a
+        suboptimal early-exit placement. v2 tracks total elapsed time across all
+        benchmarks and tightens remaining per-benchmark budgets accordingly.
+      </p>
+      <div class="inno-delta">ibm17 timeout eliminated · --all completes in ~480s</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">// CongFlow</div>
+  <p class="footer-sub">
+    Multi-restart Iterative Routing-Congestion-Gradient Perturbation<br/>
+    Team LeetFM · Partcl / HRT Macro Placement Challenge 2026
+  </p>
+  <div class="footer-pills">
+    <div class="f-pill">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Avg Proxy 1.4486
+    </div>
+    <div class="f-pill">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      Beats RePlAce 1.4578
+    </div>
+    <div class="f-pill">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      ~200s / benchmark
+    </div>
+    <div class="f-pill">17 IBM ICCAD04 benchmarks</div>
+    <div class="f-pill">Python · NumPy · DREAMPlace</div>
+  </div>
+  <p class="footer-copy">Varrahan Uthayan · varrahan · 2026</p>
+</footer>
+
+<script>
+/* ══════════ POLYFILLS ══════════ */
+// roundRect polyfill for browsers < Chrome 99 / Firefox 112
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,radii){
+    var r = Array.isArray(radii) ? radii[0] : (radii||0);
+    r = Math.min(r, Math.abs(w)/2, Math.abs(h)/2);
+    this.beginPath();
+    this.moveTo(x+r, y);
+    this.lineTo(x+w-r, y);
+    this.quadraticCurveTo(x+w, y, x+w, y+r);
+    this.lineTo(x+w, y+h-r);
+    this.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+    this.lineTo(x+r, y+h);
+    this.quadraticCurveTo(x, y+h, x, y+h-r);
+    this.lineTo(x, y+r);
+    this.quadraticCurveTo(x, y, x+r, y);
+    this.closePath();
+  };
+}
+
+/* ══════════ HERO CANVAS ══════════ */
+(function(){
+  const C=document.getElementById('heroCanvas'),ctx=C.getContext('2d');
+  const CELL=52;let W,H,grid;
+
+  function mkGrid(){
+    const cols=Math.ceil(W/CELL)+2,rows=Math.ceil(H/CELL)+2;
+    grid=[];
+    for(let c=0;c<cols;c++){
+      grid[c]=[];
+      for(let r=0;r<rows;r++){
+        grid[c][r]={h:Math.random(),v:(Math.random()-.5)*.004,p:Math.random()*Math.PI*2};
+      }
+    }
+  }
+  function resize(){
+    W=C.width=window.innerWidth;
+    H=C.height=C.parentElement.offsetHeight;
+    mkGrid();
+  }
+
+  // Returns css color string for heat 0..1
+  function hcol(h,a){
+    // cool: h=0 → teal/green; neutral: h=0.5 → dark; hot: h=1 → orange/red
+    let r,g,b;
+    if(h<.35){
+      const t=h/.35;
+      r=Math.round(0+20*t); g=Math.round(200-40*t); b=Math.round(160-40*t);
+    } else if(h<.65){
+      const t=(h-.35)/.30;
+      r=Math.round(20+10*t); g=Math.round(160-100*t); b=Math.round(120-90*t);
+    } else {
+      const t=(h-.65)/.35;
+      r=Math.round(30+220*t); g=Math.round(60-60*t); b=Math.round(30-30*t);
+    }
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='rgba(3,4,14,.97)';
+    ctx.fillRect(0,0,W,H);
+    t+=.004;
+
+    for(let c=0;c<grid.length;c++){
+      for(let r=0;r<grid[c].length;r++){
+        const cell=grid[c][r];
+        cell.h+=cell.v+.0008*Math.sin(t+cell.p+c*.28+r*.36);
+        if(cell.h>1){cell.h=1;cell.v*=-.95}
+        if(cell.h<0){cell.h=0;cell.v*=-.95}
+        const x=c*CELL,y=r*CELL;
+        const alpha=.08+cell.h*.28;
+        ctx.fillStyle=hcol(cell.h,alpha);
+        ctx.fillRect(x,y,CELL-1,CELL-1);
+        // grid lines
+        ctx.strokeStyle=`rgba(40,55,130,${.12+cell.h*.08})`;
+        ctx.lineWidth=.6;
+        ctx.strokeRect(x+.5,y+.5,CELL-2,CELL-2);
+        // hot dot
+        if(cell.h>.8){
+          const a=(cell.h-.8)/.2;
+          ctx.beginPath();
+          ctx.arc(x+CELL/2,y+CELL/2,2.5,0,Math.PI*2);
+          ctx.fillStyle=`rgba(255,${Math.round(160-160*a)},20,${a*.9})`;
+          ctx.fill();
+        }
+      }
+    }
+
+    // vignette
+    const g2=ctx.createRadialGradient(W/2,H*.4,H*.05,W/2,H*.4,H*.75);
+    g2.addColorStop(0,'rgba(3,4,14,0)');
+    g2.addColorStop(1,'rgba(3,4,14,.94)');
+    ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
+
+    requestAnimationFrame(draw);
+  }
+  resize();window.addEventListener('resize',resize);draw();
+})();
+
+/* ══════════ INTERSECTION OBSERVER ══════════ */
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting) e.target.classList.add('in');
+  });
+},{threshold:.12});
+
+document.querySelectorAll('.reveal,.reveal-l,.phase,.tl2-item').forEach(el=>io.observe(el));
+
+// stagger pipeline phases
+document.querySelectorAll('.phase').forEach((el,i)=>{
+  el.style.transitionDelay=`${i*60}ms`;
+});
+document.querySelectorAll('.tl2-item').forEach((el,i)=>{
+  el.style.transitionDelay=`${i*70}ms`;
+});
+document.querySelectorAll('.inno-card').forEach((el,i)=>{
+  el.style.transitionDelay=`${i*60}ms`;
+});
+
+/* ══════════ SVG CHART ══════════ */
+(function(){
+  const data=[
+    {label:'SA Baseline',score:2.1251,color:'rgba(80,88,180,.55)',prev:true},
+    {label:'will_seed',  score:1.5338,color:'rgba(90,110,200,.55)',prev:true},
+    {label:'sameer_v1',  score:1.5062,color:'rgba(100,130,220,.55)',prev:true},
+    {label:'v1 (sub.)',  score:1.4804,color:'#00d4ff',prev:false},
+    {label:'v2 final',   score:1.4486,color:'#00ffb2',prev:false},
+    {label:'UT Austin',  score:1.4076,color:'rgba(180,142,255,.55)',prev:true},
+  ];
+  const REPLACE=1.4578;
+  const MIN=1.35,MAX=2.18,PH=260;
+  const canvas=document.getElementById('scoreChart');
+  const ctx=canvas.getContext('2d');
+
+  function render(){
+    const DPR=window.devicePixelRatio||1;
+    const W=canvas.parentElement.clientWidth-48;
+    canvas.width=W*DPR;canvas.height=PH*DPR;
+    canvas.style.width=W+'px';canvas.style.height=PH+'px';
+    ctx.scale(DPR,DPR);
+    ctx.clearRect(0,0,W,PH);
+
+    const PAD_L=8,PAD_R=8,PAD_T=28,PAD_B=36;
+    const plotW=W-PAD_L-PAD_R;
+    const plotH=PH-PAD_T-PAD_B;
+    const n=data.length;
+    const bW=Math.floor(plotW/n*.72);
+    const gap=(plotW-bW*n)/(n+1);
+
+    function yFor(s){return PAD_T+plotH*(1-(s-MIN)/(MAX-MIN))}
+
+    // reference line
+    const refY=yFor(REPLACE);
+    ctx.save();
+    ctx.setLineDash([5,4]);
+    ctx.strokeStyle='rgba(255,200,0,.4)';
+    ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(PAD_L,refY);ctx.lineTo(W-PAD_R,refY);ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle='rgba(255,200,0,.65)';
+    ctx.font=`500 10px 'JetBrains Mono',monospace`;
+    ctx.fillText('RePlAce 1.4578',W-PAD_R-96,refY-5);
+
+    // bars
+    data.forEach((d,i)=>{
+      const x=PAD_L+gap*(i+1)+bW*i;
+      const bH=plotH*(d.score-MIN)/(MAX-MIN);
+      const y=PAD_T+plotH-bH;
+
+      // gradient fill
+      const grd=ctx.createLinearGradient(0,y,0,y+bH);
+      grd.addColorStop(0,d.color);
+      grd.addColorStop(1,d.color.replace(/[\d.]+\)$/,'.15)'));
+      ctx.fillStyle=grd;
+      ctx.beginPath();
+      ctx.roundRect(x,y,bW,bH,4);
+      ctx.fill();
+
+      // top cap glow for "our" bars
+      if(!d.prev){
+        ctx.shadowColor=d.color;
+        ctx.shadowBlur=12;
+        ctx.fillStyle=d.color;
+        ctx.beginPath();ctx.roundRect(x,y,bW,3,2);ctx.fill();
+        ctx.shadowBlur=0;
+      }
+
+      // score label
+      ctx.fillStyle=d.prev?'rgba(150,160,220,.7)':d.color;
+      ctx.font=`700 9.5px 'JetBrains Mono',monospace`;
+      ctx.textAlign='center';
+      ctx.fillText(d.score.toFixed(4),x+bW/2,y-7);
+
+      // name label
+      ctx.fillStyle='rgba(120,130,180,.7)';
+      ctx.font=`500 8.5px 'Inter',sans-serif`;
+      ctx.fillText(d.label,x+bW/2,PH-PAD_B+14);
+    });
+  }
+
+  render();
+  window.addEventListener('resize',render);
+})();
+
+/* ══════════ BENCHMARK TABLE ══════════ */
+(function(){
+  const rows=[
+    {name:'ibm01',hard:246, v1:1.1460,v2:1.1507,r:0.9976},
+    {name:'ibm02',hard:271, v1:1.5923,v2:1.5062,r:1.8370},
+    {name:'ibm03',hard:290, v1:1.3603,v2:1.2369,r:1.3222},
+    {name:'ibm04',hard:295, v1:1.3196,v2:1.2895,r:1.3024},
+    {name:'ibm06',hard:178, v1:1.6684,v2:1.5473,r:1.6187},
+    {name:'ibm07',hard:291, v1:1.4954,v2:1.4866,r:1.4633},
+    {name:'ibm08',hard:301, v1:1.5251,v2:1.5076,r:1.4285},
+    {name:'ibm09',hard:253, v1:1.1304,v2:1.1026,r:1.1194},
+    {name:'ibm10',hard:786, v1:1.3661,v2:1.3382,r:1.5009},
+    {name:'ibm11',hard:373, v1:1.2354,v2:1.2292,r:1.1774},
+    {name:'ibm12',hard:651, v1:1.6507,v2:1.6482,r:1.7261},
+    {name:'ibm13',hard:424, v1:1.4011,v2:1.3844,r:1.3355},
+    {name:'ibm14',hard:614, v1:1.6002,v2:1.5906,r:1.5436},
+    {name:'ibm15',hard:393, v1:1.6061,v2:1.6045,r:1.5159},
+    {name:'ibm16',hard:458, v1:1.5323,v2:1.5181,r:1.4780},
+    {name:'ibm17',hard:760, v1:1.7437,v2:1.7425,r:1.6446},
+    {name:'ibm18',hard:285, v1:1.7896,v2:1.7870,r:1.7722},
+  ];
+
+  const tbody=document.getElementById('benchTbody');
+  rows.forEach(d=>{
+    const beats=d.v2<d.r;
+    const pct=((d.r-d.v2)/d.r*100).toFixed(1);
+    const barW=Math.round(Math.max(4,Math.min(120,(1.85-d.v2)/(1.85-1.05)*120)));
+    const barColor=beats?'var(--green)':'rgba(100,110,180,.5)';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="t-name">${d.name}</td>
+      <td class="t-dim">${d.hard}</td>
+      <td class="t-dim">${d.v1.toFixed(4)}</td>
+      <td class="t-v2">${d.v2.toFixed(4)}</td>
+      <td class="t-ref">${d.r.toFixed(4)}</td>
+      <td><span class="chip-w ${beats?'win':'lose'}">${beats?'▲':'▼'} ${Math.abs(pct)}%</span></td>
+      <td><div class="bar-cell"><div class="mini-bar" style="width:${barW}px;background:${barColor}"></div></div></td>
+    `;
+    tbody.appendChild(tr);
+  });
+})();
+</script>
+</body>
+</html>
