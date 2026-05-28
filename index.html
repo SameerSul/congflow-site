@@ -589,14 +589,14 @@ footer{
         The proxy is 1.0×wirelength + 0.5×density + 0.5×congestion. That looks balanced,
         but the three terms don't normalize to similar scales: congestion runs 1.3–2.7,
         density around 0.9, and wirelength sits at about 0.06. We tried wirelength SA
-        anyway. Pulling macros closer together tightens routing corridors — congestion spikes
+        anyway. Pulling macros closer together tightens routing corridors, congestion spikes
         and the proxy goes up, not down.
       </p>
       <ul class="insight-list reveal-l">
         <li>Wirelength SA clusters macros tightly; H/V corridors congest; proxy goes up, not down</li>
-        <li>initial.plc already has decent spread from the prior EDA flow — perturb it, don't replace it</li>
+        <li>initial.plc already has decent spread from the prior EDA flow; perturb it, don't replace it</li>
         <li>Every move CongFlow considers is ranked by its effect on the live H/V routing congestion map</li>
-        <li>Density-based move ranking is anti-correlated with proxy cost — confirmed empirically on every benchmark we tested</li>
+        <li>Density-based move ranking is anti-correlated with proxy cost, confirmed empirically on every benchmark we tested</li>
       </ul>
     </div>
     <div class="glass-card reveal">
@@ -664,7 +664,7 @@ footer{
         <div class="phase-body">
           Resolves overlaps from <code>initial.plc</code> using a vectorized spiral search that places macros
           largest-area-first. A float32 precision fix here is critical: without it, the legalizer
-          takes a slightly different path and ibm04 diverges to 1.3364 instead of 1.3316 — a
+          takes a slightly different path and ibm04 diverges to 1.3364 instead of 1.3316, a
           difference that compounds through every phase.
           <strong style="color:var(--text)"> 12× faster than the original scalar version (3.2s → 0.27s on ibm04).</strong>
         </div>
@@ -679,8 +679,8 @@ footer{
           <span class="tag tag-base">PHASE 1</span>
         </div>
         <div class="phase-body">
-          Up to 12 steps at <code>frac=0.04</code> — each macro can move up to 4% of the canvas
-          width per step — with the step size halved when improvement stops. After each step that
+          Up to 12 steps at <code>frac=0.04</code> (each macro can move up to 4% of the canvas
+          width per step), with the step size halved when improvement stops. After each step that
           lowers the proxy, the starting position and the live congestion map both update, so the
           next iteration works from fresh gradient information. Stops when no move helps or there's
           less time left than three scoring calls would take.
@@ -731,8 +731,8 @@ footer{
           Two DREAMPlace instances launch at <code>place()</code> entry and run concurrently with Phases 1–3.
           "fixed" pins soft macros at their initial positions; "movable" lets DREAMPlace's NLP
           optimizer reposition the standard-cell clusters. On designs where canvas utilization is
-          below 85%, moving the stdcell clusters into open space directly relieves congestion hotspots —
-          that's the source of the −0.121 on ibm06. Best-of-both selection discards whichever result
+          below 85%, moving the stdcell clusters into open space directly relieves congestion hotspots,
+          which is the source of the −0.121 on ibm06. Best-of-both selection discards whichever result
           scores worse, so we don't regress on denser benchmarks where the movable config overshoots.
         </div>
         <div class="phase-delta">↓ −0.0161 avg · ibm06: −0.121, ibm03: −0.103, ibm02: −0.051</div>
@@ -749,7 +749,7 @@ footer{
         <div class="phase-body">
           Once the time-filling noise loop finishes, each completed DREAMPlace result gets fed into
           a short cong-grad chain (up to 3 iterations). DREAMPlace can land macros in positions far
-          from initial.plc — configurations Phase 1's greedy descent can't reach on its own — which
+          from initial.plc: configurations Phase 1's greedy descent can't reach on its own, which
           opens up congestion basins that wouldn't otherwise be explored. Win rate across the suite:
           19%. Notable: ibm10 −0.045, ibm02 −0.035, ibm04 −0.018.
         </div>
@@ -768,7 +768,7 @@ footer{
           that contribute most to current congestion and move only those. Second, proxy-scored 2-opt:
           try swapping pairs of macros (k=10 neighbors, 6 iterations, 15s budget), call the real
           evaluator on the result, and keep the swap only if the score actually drops. v1 used
-          displacement distance to decide — which turns out to be <em>anti-correlated</em> with proxy cost.
+          displacement distance to decide, which turns out to be <em>anti-correlated</em> with proxy cost.
           It burned the full 15s budget making placements worse.
         </div>
         <div class="phase-delta">↓ A1: −0.0059 avg · All 17 benchmarks improve</div>
@@ -801,12 +801,12 @@ footer{
   <div class="eyebrow">Visual Walkthrough</div>
   <h2 class="sh">Watch it optimize</h2>
   <p class="sd" style="margin-bottom:36px">
-    The grid is a routing congestion map — the same metric the TILOS evaluator scores your
+    The grid is a routing congestion map, the same metric the TILOS evaluator scores your
     placement on. Hot cells (orange/red) are overloaded routing channels where the router
     can't fit all the wires. Cool cells (teal) have spare capacity. CongFlow asks, for each
     macro: which direction reduces the hottest cells you're contributing to? It moves there,
     re-legalizes, and calls the real evaluator. The number in the corner is the actual proxy
-    score — the same number used to rank submissions.
+    score, the same number used to rank submissions.
   </p>
 
   <div class="demo-outer">
@@ -854,7 +854,7 @@ footer{
 <section class="section" id="journey">
   <div class="eyebrow">Score History</div>
   <h2 class="sh reveal">From 1.5062 to clearing the threshold</h2>
-  <p class="sd reveal" style="margin-bottom:48px">Each number is the average proxy cost from a full <code style="font-size:.85em;background:rgba(255,255,255,.06);padding:2px 7px;border-radius:4px">--all</code> run — all 17 IBM ICCAD04 benchmarks evaluated back to back. The proxy cost is what the competition ranks by: a lower number means a placement with more routing headroom, which the router can actually close.</p>
+  <p class="sd reveal" style="margin-bottom:48px">Each number is the average proxy cost from a full <code style="font-size:.85em;background:rgba(255,255,255,.06);padding:2px 7px;border-radius:4px">--all</code> run covering all 17 IBM ICCAD04 benchmarks evaluated back to back. The proxy cost is what the competition ranks by: a lower number means a placement with more routing headroom, which the router can actually close.</p>
 
   <div class="journey-wrap">
     <div class="timeline2">
@@ -976,7 +976,7 @@ footer{
           <div class="tl2-ver">Congestion-Directed Relocation · R1 · v2 FINAL</div>
           <div class="tl2-score c-green" style="font-size:2.6rem">1.4218</div>
           <div class="tl2-desc">
-            A post-2-opt pass that relocates the hottest macros into empty low-congestion legal gaps — a move that swap-only 2-opt structurally cannot make. Every candidate is verified with the incremental scorer before committing.
+            A post-2-opt pass that relocates the hottest macros into empty low-congestion legal gaps, a move that swap-only 2-opt structurally cannot make. Every candidate is verified with the incremental scorer before committing.
             <strong style="color:var(--green)"> All 17 benchmarks improved. Beats RePlAce 1.4578 by 2.5%.</strong>
           </div>
         </div>
@@ -1013,7 +1013,7 @@ footer{
   <div class="eyebrow">Benchmark Numbers</div>
   <h2 class="sh reveal">All 17 IBM ICCAD04 benchmarks</h2>
   <p class="sd reveal" style="margin-bottom:28px">
-    The competition evaluates all 17 netlists — ranging from 246 hard macros (ibm01) to 786 (ibm10) — and
+    The competition evaluates all 17 netlists (246 hard macros on ibm01 up to 786 on ibm10) and
     averages the result. Green rows are where our score falls below the RePlAce baseline.
     Both v1 and v2 are shown so you can see exactly which benchmarks moved and by how much.
   </p>
@@ -1079,7 +1079,7 @@ footer{
         Two DREAMPlace configs run in parallel: "fixed" pins soft macros at their initial
         positions; "movable" lets DP's NLP optimizer reposition them. On benchmarks with
         canvas utilization below 85%, the movable config spreads standard-cell clusters
-        away from congested corridors — that's the source of the −0.121 on ibm06.
+        away from congested corridors, which is the source of the −0.121 on ibm06.
         Best-of-both discards whichever result scores worse, so dense benchmarks like ibm01
         and ibm09 don't regress.
       </p>
@@ -1133,7 +1133,7 @@ footer{
         After 2-opt, the hottest macros can be stuck because no valid swap partner exists nearby.
         Relocation breaks that constraint: it lifts each hot macro entirely out of its current slot
         and places it into the emptiest legal gap on the canvas. Every candidate is scored with the
-        real incremental evaluator before committing — if no gap beats the current score, the macro
+        real incremental evaluator before committing; if no gap beats the current score, the macro
         stays where it is.
       </p>
       <div class="inno-delta">↓ −0.0268 avg · All 17 benchmarks improve</div>
