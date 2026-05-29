@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480">
+  <!-- Orange background with chamfered bottom-right corner -->
+  <path d="M44,0 L676,0 Q720,0 720,44 L720,396 L628,480 L44,480 Q0,480 0,436 L0,44 Q0,0 44,0 Z" fill="#FF7800"/>
+  <!-- HRT lettering -->
+  <text x="360" y="336" font-family="Impact,'Arial Black','Arial Narrow',Arial,sans-serif"
+        font-size="272" fill="white" text-anchor="middle" font-weight="900" letter-spacing="4">HRT</text>
+  <!-- Registration mark -->
+  <text x="620" y="468" font-family="Arial,Helvetica,sans-serif" font-size="52" fill="white" text-anchor="middle">&#174;</text>
+</svg>

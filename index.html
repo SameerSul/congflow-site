@@ -448,6 +448,22 @@ footer{
 }
 .footer-copy{font-size:.72rem;color:var(--dimmer)}
 
+/*──────── HRT CHALLENGE BANNER ────────*/
+.hrt-section{max-width:1100px;margin:0 auto;padding:72px 48px}
+.hrt-inner{display:flex;align-items:center;gap:52px}
+.hrt-logo-img{width:160px;flex-shrink:0;border-radius:14px;box-shadow:0 8px 32px rgba(255,120,0,.18)}
+.hrt-text{flex:1}
+.hrt-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.67rem;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.hrt-eyebrow::before{content:'';width:24px;height:1px;background:var(--orange)}
+.hrt-challenge-title{font-size:clamp(1.3rem,2.4vw,1.9rem);font-weight:800;letter-spacing:-.03em;margin-bottom:14px;line-height:1.1}
+.hrt-desc{font-size:.93rem;color:var(--dim);line-height:1.82;max-width:580px;margin-bottom:28px}
+.hrt-facts{display:flex;gap:36px;flex-wrap:wrap}
+.hrt-fact{display:flex;flex-direction:column;gap:3px}
+.hrt-fact-n{font-family:'JetBrains Mono',monospace;font-size:1.35rem;font-weight:700;color:var(--orange)}
+.hrt-fact-l{font-size:.67rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+@media(max-width:700px){.hrt-inner{flex-direction:column;gap:28px}.hrt-logo-img{width:110px}}
+@media(max-width:640px){.hrt-section{padding:52px 24px}}
+
 /*──────── SCROLL ANIMATIONS ────────*/
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
 .reveal.in{opacity:1;transform:none}
@@ -530,11 +546,11 @@ footer{
 
     <div class="hero-stats">
       <div class="hero-stat">
-        <div class="hero-stat-n c-green" id="ctr-score">1.4218</div>
+        <div class="hero-stat-n c-green" id="ctr-score">1.4243</div>
         <div class="hero-stat-l">Avg Proxy Cost</div>
       </div>
       <div class="hero-stat">
-        <div class="hero-stat-n c-cyan">−2.5%</div>
+        <div class="hero-stat-n c-cyan">−2.3%</div>
         <div class="hero-stat-l">vs RePlAce</div>
       </div>
       <div class="hero-stat">
@@ -565,19 +581,45 @@ footer{
 <div class="beat-strip">
   <div class="beat-eyebrow">Evaluator output · all 17 IBM ICCAD04 benchmarks</div>
   <div class="beat-terminal">
-    <span class="bt-label">avg_proxy</span><span class="bt-val c-green">1.4218</span>
+    <span class="bt-label">avg_proxy</span><span class="bt-val c-green">1.4243</span>
     <span class="bt-sep">·</span>
     <span class="bt-label">baseline</span><span class="bt-val" style="color:rgba(255,200,0,.8)">1.4578</span>
     <span class="bt-sep">·</span>
-    <span class="bt-label">delta</span><span class="bt-val c-cyan">−0.0360 (−2.5%)</span>
+    <span class="bt-label">delta</span><span class="bt-val c-cyan">−0.0335 (−2.3%)</span>
     <span class="bt-sep">·</span>
     <span class="bt-label">status</span><span class="bt-val c-green">CLEARED ✓</span>
   </div>
   <p class="beat-sub" style="margin-top:14px">
-    Gap to GPU-accelerated leaderboard #1 (UT Austin DREAMPlace): <strong>0.0142</strong>.
+    Gap to GPU-accelerated leaderboard #1 (UT Austin DREAMPlace): <strong>0.0167</strong>.
     CongFlow runs entirely on CPU.
   </p>
 </div>
+
+<!-- HRT CHALLENGE -->
+<section class="hrt-section reveal">
+  <div class="hrt-inner">
+    <img src="hrt-logo.svg" class="hrt-logo-img" alt="HRT" />
+    <div class="hrt-text">
+      <div class="hrt-eyebrow">Challenge Sponsor</div>
+      <h2 class="hrt-challenge-title">Partcl / HRT Macro Placement Challenge 2026</h2>
+      <p class="hrt-desc">
+        Hudson River Trading (HRT) and UT Austin's TILOS research group co-run this open
+        competition to advance the state of macro placement for VLSI chips. Each team submits
+        a Python placer with a one-hour wall-clock budget to place all 17 IBM ICCAD04 netlists.
+        Placements are scored by a routing-congestion-weighted proxy cost, the same metric the
+        commercial router uses to decide whether a layout is closable. Clearing the RePlAce
+        baseline earns a shot at the $20K grand prize.
+      </p>
+      <div class="hrt-facts">
+        <div class="hrt-fact"><div class="hrt-fact-n">$20K</div><div class="hrt-fact-l">Grand Prize</div></div>
+        <div class="hrt-fact"><div class="hrt-fact-n">17</div><div class="hrt-fact-l">IBM Benchmarks</div></div>
+        <div class="hrt-fact"><div class="hrt-fact-n">1.4578</div><div class="hrt-fact-l">RePlAce Threshold</div></div>
+        <div class="hrt-fact"><div class="hrt-fact-n">1h</div><div class="hrt-fact-l">Runtime Cap</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="rule"></div>
 
 <!-- METHOD -->
 <section class="section" id="method">
@@ -630,7 +672,7 @@ footer{
           <div style="font-size:.67rem;color:var(--dim);margin-top:4px;letter-spacing:.06em;text-transform:uppercase">UT Austin #1</div>
         </div>
         <div style="background:rgba(0,255,178,.06);border:1px solid rgba(0,255,178,.15);border-radius:10px;padding:14px 16px;text-align:center">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--green)">1.4218</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--green)">1.4243</div>
           <div style="font-size:.67rem;color:var(--dim);margin-top:4px;letter-spacing:.06em;text-transform:uppercase">CongFlow v2 ✓</div>
         </div>
       </div>
@@ -853,7 +895,7 @@ footer{
 <!-- JOURNEY -->
 <section class="section" id="journey">
   <div class="eyebrow">Score History</div>
-  <h2 class="sh reveal">From 1.5062 to clearing the threshold</h2>
+  <h2 class="sh reveal">From 1.5062 to 1.4243</h2>
   <p class="sd reveal" style="margin-bottom:48px">Each number is the average proxy cost from a full <code style="font-size:.85em;background:rgba(255,255,255,.06);padding:2px 7px;border-radius:4px">--all</code> run covering all 17 IBM ICCAD04 benchmarks evaluated back to back. The proxy cost is what the competition ranks by: a lower number means a placement with more routing headroom, which the router can actually close.</p>
 
   <div class="journey-wrap">
@@ -969,15 +1011,30 @@ footer{
 
       <div class="tl2-item">
         <div class="tl2-left">
+          <div class="tl2-dot" style="border-color:#08c890;background:#08c890"></div>
+          <div class="tl2-line"></div>
+        </div>
+        <div class="tl2-right">
+          <div class="tl2-ver">Congestion-Directed Relocation · R1</div>
+          <div class="tl2-score" style="color:#08c890">1.4326</div>
+          <div class="tl2-desc">
+            A post-2-opt pass that lifts the hottest macros out of their current slots and places each into the lowest-congestion legal gap on the canvas. Every candidate is scored with the incremental evaluator before committing.
+            <strong style="color:#08c890"> All 17 improved. −0.0096 avg.</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl2-item">
+        <div class="tl2-left">
           <div class="tl2-dot glow" style="border-color:var(--green);background:var(--green)"></div>
           <div class="tl2-line" style="background:transparent"></div>
         </div>
         <div class="tl2-right">
-          <div class="tl2-ver">Congestion-Directed Relocation · R1 · v2 FINAL</div>
-          <div class="tl2-score c-green" style="font-size:2.6rem">1.4218</div>
+          <div class="tl2-ver">Interleaved Relocation + 2-opt · R2 · v2 FINAL</div>
+          <div class="tl2-score c-green" style="font-size:2.6rem">1.4243</div>
           <div class="tl2-desc">
-            A post-2-opt pass that relocates the hottest macros into empty low-congestion legal gaps, a move that swap-only 2-opt structurally cannot make. Every candidate is verified with the incremental scorer before committing.
-            <strong style="color:var(--green)"> All 17 benchmarks improved. Beats RePlAce 1.4578 by 2.5%.</strong>
+            Instead of one relocation pass after 2-opt, R2 alternates them: each relocation opens new swap candidates, and each 2-opt pass opens new relocation targets. Up to 6 rounds, budget-gated. Both accept strictly on true proxy, so the loop never regresses.
+            <strong style="color:var(--green)"> All 17 benchmarks improved. Beats RePlAce 1.4578 by 2.3%.</strong>
           </div>
         </div>
       </div>
@@ -1037,9 +1094,9 @@ footer{
           <td class="t-name">AVG (17)</td>
           <td class="t-dim">all</td>
           <td class="t-dim">1.4804</td>
-          <td class="t-v2">1.4218</td>
+          <td class="t-v2">1.4243</td>
           <td class="t-ref">1.4578</td>
-          <td><span class="chip-w win">▲ −2.5%</span></td>
+          <td><span class="chip-w win">▲ −2.3%</span></td>
           <td></td>
         </tr>
       </tfoot>
@@ -1054,7 +1111,7 @@ footer{
   <div class="eyebrow">Engineering Decisions</div>
   <h2 class="sh reveal">Six changes. −0.0586 avg improvement.</h2>
   <p class="sd reveal" style="margin-bottom:36px">
-    v2 started from a 1.4804 checkpoint. Each of these six decisions was motivated by a concrete measured failure in v1, not by intuition.
+    v2 started from a 1.4804 checkpoint. Each decision below was motivated by a concrete measured failure in the prior version, not by intuition. R2 is the final shipped change.
   </p>
 
   <div class="inno-grid">
@@ -1136,7 +1193,20 @@ footer{
         real incremental evaluator before committing; if no gap beats the current score, the macro
         stays where it is.
       </p>
-      <div class="inno-delta">↓ −0.0268 avg · All 17 benchmarks improve</div>
+      <div class="inno-delta">↓ −0.0096 avg · All 17 benchmarks improve</div>
+    </div>
+
+    <div class="inno-card ir1 reveal" style="--card-accent:var(--green)">
+      <div class="inno-icon">🔁</div>
+      <div class="inno-title">Interleaved Relocation + 2-opt</div>
+      <div class="inno-code">R2 · interleaved rounds · v2 FINAL</div>
+      <p class="inno-body">
+        Running relocation once after 2-opt leaves gains on the table: each relocation creates new
+        open gaps that 2-opt can exploit, and each 2-opt pass creates new congestion patterns that
+        relocation can target. R2 alternates the two in a loop of up to 6 rounds. Budget-gated and
+        strictly non-regressing — both accept only on a confirmed true-proxy improvement.
+      </p>
+      <div class="inno-delta">↓ −0.0083 avg · ibm04 −0.043 · ibm10 −0.022 · All 17 improve</div>
     </div>
   </div>
 </section>
@@ -1151,7 +1221,7 @@ footer{
   <div class="footer-pills">
     <div class="f-pill">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Avg Proxy 1.4218
+      Avg Proxy 1.4243
     </div>
     <div class="f-pill">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1296,7 +1366,7 @@ document.querySelectorAll('.inno-card').forEach((el,i)=>{
     {label:'will_seed',  score:1.5338,color:'rgba(90,110,200,.55)',prev:true},
     {label:'sameer_v1',  score:1.5062,color:'rgba(100,130,220,.55)',prev:true},
     {label:'v1 (sub.)',  score:1.4804,color:'#00d4ff',prev:false},
-    {label:'v2 final',   score:1.4218,color:'#00ffb2',prev:false},
+    {label:'v2 final',   score:1.4243,color:'#00ffb2',prev:false},
     {label:'UT Austin',  score:1.4076,color:'rgba(180,142,255,.55)',prev:true},
   ];
   const REPLACE=1.4578;
@@ -1377,23 +1447,23 @@ document.querySelectorAll('.inno-card').forEach((el,i)=>{
 /* ══════════ BENCHMARK TABLE ══════════ */
 (function(){
   const rows=[
-    {name:'ibm01',hard:246, v1:1.1460,v2:1.1107,r:0.9976},
-    {name:'ibm02',hard:271, v1:1.5923,v2:1.4759,r:1.8370},
-    {name:'ibm03',hard:290, v1:1.3603,v2:1.2297,r:1.3222},
-    {name:'ibm04',hard:295, v1:1.3196,v2:1.2349,r:1.3024},
-    {name:'ibm06',hard:178, v1:1.6684,v2:1.5354,r:1.6187},
-    {name:'ibm07',hard:291, v1:1.4954,v2:1.4733,r:1.4633},
-    {name:'ibm08',hard:301, v1:1.5251,v2:1.4859,r:1.4285},
-    {name:'ibm09',hard:253, v1:1.1304,v2:1.1005,r:1.1194},
-    {name:'ibm10',hard:786, v1:1.3661,v2:1.3231,r:1.5009},
-    {name:'ibm11',hard:373, v1:1.2354,v2:1.2166,r:1.1774},
-    {name:'ibm12',hard:651, v1:1.6507,v2:1.6309,r:1.7261},
-    {name:'ibm13',hard:424, v1:1.4011,v2:1.3673,r:1.3355},
-    {name:'ibm14',hard:614, v1:1.6002,v2:1.5706,r:1.5436},
-    {name:'ibm15',hard:393, v1:1.6061,v2:1.5826,r:1.5159},
-    {name:'ibm16',hard:458, v1:1.5323,v2:1.5009,r:1.4780},
-    {name:'ibm17',hard:760, v1:1.7437,v2:1.7320,r:1.6446},
-    {name:'ibm18',hard:285, v1:1.7896,v2:1.7837,r:1.7722},
+    {name:'ibm01',hard:246, v1:1.1460,v2:1.1098,r:0.9976},
+    {name:'ibm02',hard:271, v1:1.5923,v2:1.4612,r:1.8370},
+    {name:'ibm03',hard:290, v1:1.3603,v2:1.2246,r:1.3222},
+    {name:'ibm04',hard:295, v1:1.3196,v2:1.1923,r:1.3024},
+    {name:'ibm06',hard:178, v1:1.6684,v2:1.5331,r:1.6187},
+    {name:'ibm07',hard:291, v1:1.4954,v2:1.4701,r:1.4633},
+    {name:'ibm08',hard:301, v1:1.5251,v2:1.4823,r:1.4285},
+    {name:'ibm09',hard:253, v1:1.1304,v2:1.0997,r:1.1194},
+    {name:'ibm10',hard:786, v1:1.3661,v2:1.3007,r:1.5009},
+    {name:'ibm11',hard:373, v1:1.2354,v2:1.2091,r:1.1774},
+    {name:'ibm12',hard:651, v1:1.6507,v2:1.6202,r:1.7261},
+    {name:'ibm13',hard:424, v1:1.4011,v2:1.3604,r:1.3355},
+    {name:'ibm14',hard:614, v1:1.6002,v2:1.5649,r:1.5436},
+    {name:'ibm15',hard:393, v1:1.6061,v2:1.5790,r:1.5159},
+    {name:'ibm16',hard:458, v1:1.5323,v2:1.4944,r:1.4780},
+    {name:'ibm17',hard:760, v1:1.7437,v2:1.7274,r:1.6446},
+    {name:'ibm18',hard:285, v1:1.7896,v2:1.7836,r:1.7722},
   ];
 
   const tbody=document.getElementById('benchTbody');
@@ -1499,12 +1569,12 @@ document.querySelectorAll('.inno-card').forEach((el,i)=>{
   }
 
   function scoreAt(t){
-    const pts=[[0,1.5062],[.08,1.4980],[.50,1.4620],[.65,1.4540],[.78,1.4490],[.90,1.4350],[1,1.4218]];
+    const pts=[[0,1.5062],[.08,1.4980],[.50,1.4620],[.65,1.4540],[.78,1.4490],[.88,1.4326],[1,1.4243]];
     for(let i=1;i<pts.length;i++) if(t<=pts[i][0]){
       const lt=(t-pts[i-1][0])/(pts[i][0]-pts[i-1][0]);
       return pts[i-1][1]+(pts[i][1]-pts[i-1][1])*ease3(lt);
     }
-    return 1.4218;
+    return 1.4243;
   }
 
   function curPhase(t){for(let i=PHASES.length-1;i>=0;i--) if(t>=PHASES[i].tS) return i; return 0;}
