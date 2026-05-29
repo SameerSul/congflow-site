@@ -316,6 +316,9 @@ nav{
 .ph7 .phase-badge{border-color:var(--orange);color:var(--orange);background:rgba(255,133,51,.08)}
 .ph8 .phase-badge{border-color:var(--red);color:var(--red);background:rgba(255,61,61,.08)}
 .ph9 .phase-badge{border-color:#c084fc;color:#c084fc;background:rgba(192,132,252,.08)}
+.phR1 .phase-badge{border-color:#00d4b0;color:#00d4b0;background:rgba(0,212,176,.08)}
+.phR2 .phase-badge{border-color:var(--green);color:var(--green);background:rgba(0,255,178,.12);box-shadow:0 0 12px rgba(0,255,178,.18)}
+.tag-reloc{background:rgba(0,212,176,.08);color:#00d4b0;border:1px solid rgba(0,212,176,.25)}
 
 /*──────── SCORE JOURNEY ────────*/
 .journey-wrap{display:grid;grid-template-columns:1fr 380px;gap:48px;align-items:start}
@@ -685,13 +688,16 @@ footer{
 <!-- PIPELINE -->
 <section class="section" id="pipeline">
   <div class="eyebrow">Engine Design</div>
-  <h2 class="sh">Nine phases. One objective.</h2>
+  <h2 class="sh">Eleven phases. One objective.</h2>
   <p class="sd" style="margin-bottom:0">
     Every phase uses the same evaluation loop: re-legalize the placement to resolve any
     overlap, then call the TILOS proxy scorer. Whatever candidate scores lowest becomes
     the new best. Directed phases (1–5) pick movement directions from live H/V routing
     congestion maps pulled straight from the evaluator. Later phases explore territory
-    that greedy gradient descent can't reach from the starting position.
+    that greedy gradient descent can't reach. The final two phases (R1, R2) are
+    relocation-based: instead of swapping macros with neighbors, they lift hot macros
+    entirely out of their slots and place them into the lowest-congestion legal gaps
+    available on the canvas.
   </p>
 
   <div class="pipeline-wrap">
@@ -802,23 +808,24 @@ footer{
       <div class="phase-left"><div class="phase-badge">8</div><div class="phase-stem"></div></div>
       <div class="phase-card2">
         <div class="phase-head">
-          <div class="phase-title">TOP-K Cong-Grad + Proxy 2-opt</div>
-          <span class="tag tag-hot">PHASE 8 · NEW IN v2</span>
+          <div class="phase-title">TOP-K Cong-Grad + Congestion-Aware 2-opt</div>
+          <span class="tag tag-hot">PHASE 8 · S9 · NEW IN v2</span>
         </div>
         <div class="phase-body">
           Two things run here. First, TOP-K cong-grad: instead of perturbing every macro, find the K
-          that contribute most to current congestion and move only those. Second, proxy-scored 2-opt:
-          try swapping pairs of macros (k=10 neighbors, 6 iterations, 15s budget), call the real
-          evaluator on the result, and keep the swap only if the score actually drops. v1 used
-          displacement distance to decide, which turns out to be <em>anti-correlated</em> with proxy cost.
-          It burned the full 15s budget making placements worse.
+          that contribute most to current congestion and move only those. Second, proxy-scored 2-opt
+          with congestion-aware ordering (S9): macros are considered for swapping in hot-first order
+          so the most damaging placements get the first shot at improvement. When no local neighbor
+          swap helps, a cold-teleport swap is attempted with a macro in the lowest-congestion region
+          to break symmetry. v1 used displacement distance to rank swaps, which turns out to be
+          <em>anti-correlated</em> with proxy cost and burned the full budget making placements worse.
         </div>
-        <div class="phase-delta">↓ A1: −0.0059 avg · All 17 benchmarks improve</div>
+        <div class="phase-delta">↓ A1+S9: −0.0061 avg · All 17 benchmarks improve</div>
       </div>
     </div>
 
-    <div class="phase ph9 reveal" style="opacity:0">
-      <div class="phase-left"><div class="phase-badge">9</div></div>
+    <div class="phase ph9 reveal">
+      <div class="phase-left"><div class="phase-badge">9</div><div class="phase-stem"></div></div>
       <div class="phase-card2">
         <div class="phase-head">
           <div class="phase-title">Random-Order Legalization</div>
@@ -830,6 +837,53 @@ footer{
           produce different legal arrangements from the same initial positions.
         </div>
         <div class="phase-delta">↓ −0.0003 avg</div>
+      </div>
+    </div>
+
+    <div class="phase phR1 reveal">
+      <div class="phase-left"><div class="phase-badge">R1</div><div class="phase-stem"></div></div>
+      <div class="phase-card2">
+        <div class="phase-head">
+          <div class="phase-title">Congestion-Directed Relocation</div>
+          <span class="tag tag-reloc">R1 · NEW IN v2</span>
+        </div>
+        <div class="phase-body">
+          2-opt has a structural blind spot: it can only swap macro A with a neighbor B. If no
+          neighbor B exists that reduces congestion when swapped with the hottest macro, 2-opt is
+          stuck in a local minimum it cannot escape by swapping alone.<br/><br/>
+          Relocation breaks this constraint. For each macro ranked by congestion contribution, the
+          pass <em>lifts it entirely out of its current slot</em> and scans every empty legal gap on
+          the canvas for a lower-congestion landing spot. Every candidate position is evaluated with
+          the incremental scorer before committing. If no gap beats the current score, the macro stays
+          put. Because relocation is not constrained to neighbors, it can reposition a hot macro
+          across the full canvas, opening routing corridors that swap-based moves cannot reach.
+        </div>
+        <div class="phase-delta">↓ −0.0096 avg · All 17 benchmarks improve</div>
+      </div>
+    </div>
+
+    <div class="phase phR2 reveal">
+      <div class="phase-left"><div class="phase-badge">R2</div></div>
+      <div class="phase-card2">
+        <div class="phase-head">
+          <div class="phase-title">Interleaved Relocation + 2-opt</div>
+          <span class="tag tag-new">R2 · v2 FINAL</span>
+        </div>
+        <div class="phase-body">
+          Running one pass of R1 relocation after one pass of 2-opt is not the optimum order. Each
+          phase creates new opportunities for the other:<br/><br/>
+          <strong style="color:var(--text)">Relocation opens 2-opt targets.</strong> Moving a hot macro to a new location
+          changes the local neighborhood landscape. Neighbor pairs that were suboptimal swaps before
+          the relocation can become productive ones after it.<br/><br/>
+          <strong style="color:var(--text)">2-opt opens relocation targets.</strong> Swapping two macros changes which
+          cells are empty and which are congested. A macro that had no better landing spot before a
+          2-opt round may have a clear low-congestion gap after it.<br/><br/>
+          R2 exploits this by alternating the two passes in a loop of up to 6 rounds, budget-gated.
+          Both phases accept only on a confirmed proxy improvement from the real incremental evaluator,
+          so the loop is strictly non-regressing. It stops as soon as neither phase finds any
+          improvement in a full round.
+        </div>
+        <div class="phase-delta">↓ −0.0083 avg · ibm04 −0.043 · ibm10 −0.022 · ibm02 −0.015 · All 17 improve</div>
       </div>
     </div>
 
